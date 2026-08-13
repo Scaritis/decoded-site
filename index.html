@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DECODED</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;500;700;800&family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Share+Tech+Mono&family=Anton&family=JetBrains+Mono:wght@400;500;700;800&family=Chakra+Petch:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap');
 
   :root {
     --bg: #08080a;
@@ -18,9 +18,9 @@
     --text-dim: #8a8a94;
     --red: #b90a0a;
     --gold: #d4af37;
-    --mono: 'JetBrains Mono', monospace;
+    --mono: 'Share Tech Mono', 'JetBrains Mono', monospace;
     --sans: 'Chakra Petch', 'Inter', sans-serif;
-    --display: 'Anton', 'Chakra Petch', sans-serif;
+    --display: 'Orbitron', 'Anton', 'Chakra Petch', sans-serif;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -262,6 +262,8 @@
     font-size: 28px;
     font-weight: 700;
     color: var(--text);
+    letter-spacing: 1px;
+    font-variant-numeric: tabular-nums;
   }
   .stat-label {
     font-size: 11px;
@@ -317,6 +319,13 @@
     font-size: clamp(28px, 5vw, 42px);
     letter-spacing: -0.5px;
     margin-bottom: 20px;
+  }
+  .section-title.bin-title {
+    font-size: clamp(15px, 2.6vw, 22px);
+    letter-spacing: 1px;
+    font-weight: 700;
+    line-height: 1.6;
+    word-break: break-all;
   }
   .section-desc {
     color: var(--text-dim);
@@ -1220,7 +1229,7 @@
     </div>
     <div class="about-copy">
       <div class="section-eyebrow">The Concept</div>
-      <div class="section-title scramble-ready" style="font-size:32px;">Built from raw numbers.</div>
+      <div class="section-title scramble-ready bin-title" title="Built from raw numbers.">01000010 01110101 01101001 01101100 01110100 00100000 01100110 01110010 01101111 01101101 00100000 01110010 01100001 01110111 00100000 01101110 01110101 01101101 01100010 01100101 01110010 01110011 00101110</div>
       <p>Every face in the collection is constructed entirely from digits &mdash; a dull, flickering noise field with a lit signal cutting through the center. <strong>The digits are the data.</strong> Nothing is decorative.</p>
       <p>Fully generative, 19 trait categories, weighted rarity across 5 tiers. Each node is a distinct combination pulled from a real combinatorial space &mdash; not a recolored template.</p>
       <p>Minting on <strong>Robinhood Chain</strong>, the first AI-native Layer 2 &mdash; positioning DE<span class="accent" style="color: var(--lime);">CODED</span> as the first agent-native collection on day one of a new chain.</p>
@@ -1231,7 +1240,7 @@
 <div class="digit-divider" data-divider></div>
 <section id="rarity">
   <div class="section-eyebrow">Distribution</div>
-  <div class="section-title scramble-ready">Five tiers. 2,222 nodes.</div>
+  <div class="section-title scramble-ready bin-title" title="Five tiers. 2,222 nodes.">01000110 01101001 01110110 01100101 00100000 01110100 01101001 01100101 01110010 01110011 00101110 00100000 00110010 00101100 00110010 00110010 00110010 00100000 01101110 01101111 01100100 01100101 01110011 00101110</div>
   <p class="section-desc">Overall rarity is a weighted score across all 19 trait categories &mdash; not just one flashy trait. Legendary means multiple rare pulls stacked together.</p>
   <div class="rarity-grid">
     <div class="rarity-cell tier-common">
@@ -1423,7 +1432,7 @@
 <div class="digit-divider" data-divider></div>
 <section id="techagent">
   <div class="section-eyebrow">The Tech</div>
-  <div class="section-title scramble-ready">How the agent layer actually works.</div>
+  <div class="section-title scramble-ready bin-title" title="How the agent layer actually works.">01001000 01101111 01110111 00100000 01110100 01101000 01100101 00100000 01100001 01100111 01100101 01101110 01110100 00100000 01101100 01100001 01111001 01100101 01110010 00100000 01100001 01100011 01110100 01110101 01100001 01101100 01101100 01111001 00100000 01110111 01101111 01110010 01101011 01110011 00101110</div>
   <p class="section-desc">Not a marketing phrase. Here's the real mechanism behind "every node is an agent" &mdash; and what that unlocks for holders.</p>
 
   <div class="roadmap-list">
@@ -1463,7 +1472,7 @@
 <div class="digit-divider" data-divider></div>
 <section id="postmint">
   <div class="section-eyebrow">Post-Mint</div>
-  <div class="section-title scramble-ready">Live once nodes are out.</div>
+  <div class="section-title scramble-ready bin-title" title="Live once nodes are out.">01001100 01101001 01110110 01100101 00100000 01101111 01101110 01100011 01100101 00100000 01101110 01101111 01100100 01100101 01110011 00100000 01100001 01110010 01100101 00100000 01101111 01110101 01110100 00101110</div>
   <p class="section-desc">These aren't live yet because there's nothing to trade or lock until nodes exist. The moment mint clears, this section gets replaced with the real thing &mdash; not another promise.</p>
 
   <div class="postmint-grid">
@@ -1489,7 +1498,7 @@
 <div class="digit-divider" data-divider></div>
 <section id="customize">
   <div class="section-eyebrow">Make It Yours</div>
-  <div class="section-title scramble-ready">Light your own digits.</div>
+  <div class="section-title scramble-ready bin-title" title="Light your own digits.">01001100 01101001 01100111 01101000 01110100 00100000 01111001 01101111 01110101 01110010 00100000 01101111 01110111 01101110 00100000 01100100 01101001 01100111 01101001 01110100 01110011 00101110</div>
   <p class="section-desc">Test trait combinations before mint. Every combination is unique — rarity is determined by what you hold, not what you build here.</p>
 
 <div class="customizer-wrap">
@@ -1601,7 +1610,7 @@
 <div class="digit-divider" data-divider></div>
 <section id="roadmap">
   <div class="section-eyebrow">What's Next</div>
-  <div class="section-title scramble-ready">Roadmap</div>
+  <div class="section-title scramble-ready bin-title" title="Roadmap">01010010 01101111 01100001 01100100 01101101 01100001 01110000</div>
   <p class="section-desc">Five stages. No fake dates. Everything here is committed and in progress.</p>
 
   <div class="roadmap-grid">
@@ -3112,7 +3121,7 @@ let agentAddress = null;
 
 // ---------- SCRAMBLE-REVEAL SECTION TITLES ----------
 (function () {
-  const CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const CHARS = '01';
   const titles = document.querySelectorAll('.scramble-ready');
   const done = new WeakSet();
 
