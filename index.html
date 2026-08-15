@@ -1153,6 +1153,47 @@
 
   /* ---------- ACTIVE NAV LINK ---------- */
   .nav-links a.active { color: var(--lime); }
+
+  /* ---------- PAGODA DIGIT CURTAIN ---------- */
+  #pagodaCurtain {
+    position: relative;
+    width: min(560px, 84vw);
+    margin: 0 auto 0;
+    user-select: none;
+  }
+  #pagodaGlow {
+    position: absolute;
+    top: 4%;
+    left: 50%;
+    width: 70%;
+    height: 40%;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at center, rgba(200,255,20,0.16) 0%, rgba(200,255,20,0.05) 45%, rgba(200,255,20,0) 75%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  #pagodaRoof {
+    display: block;
+    width: 100%;
+    position: relative;
+    z-index: 2;
+    transition: transform 0.4s ease-out;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.5));
+  }
+  #pagodaCurtainCanvas {
+    display: block;
+    width: 100%;
+    height: 44vh;
+    max-height: 400px;
+    margin-top: 0; /* set precisely in JS to align with the roof's tip line */
+    position: relative;
+    z-index: 1;
+  }
+  @media (max-width: 768px) {
+    #pagodaCurtain { width: 92vw; }
+    #pagodaCurtainCanvas { height: 32vh; }
+  }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
 </head>
@@ -1164,6 +1205,70 @@
 <div id="introOverlay">
   <canvas id="introCanvas"></canvas>
   <div class="intro-content">
+    <div id="pagodaCurtain">
+      <div id="pagodaGlow"></div>
+      <svg id="pagodaRoof" viewBox="0 0 520 172" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <clipPath id="roofClip">
+            <path d="M10,52
+                     C 40,60 72,86 112,98
+                     C 175,116 225,120 260,120
+                     C 295,120 345,116 408,98
+                     C 448,86 480,60 510,52
+                     L 510,80
+                     C 480,88 448,113 408,125
+                     C 345,143 295,148 260,148
+                     C 225,148 175,143 112,125
+                     C 72,113 40,88 10,80 Z"/>
+          </clipPath>
+        </defs>
+        <!-- base plank -->
+        <path d="M10,52
+                 C 40,60 72,86 112,98
+                 C 175,116 225,120 260,120
+                 C 295,120 345,116 408,98
+                 C 448,86 480,60 510,52
+                 L 510,80
+                 C 480,88 448,113 408,125
+                 C 345,143 295,148 260,148
+                 C 225,148 175,143 112,125
+                 C 72,113 40,88 10,80 Z"
+              fill="#232838" stroke="#0a0c12" stroke-width="2"/>
+        <!-- corrugated ribs, clipped to the plank silhouette -->
+        <g id="roofRibs" clip-path="url(#roofClip)"></g>
+        <!-- dark underside lip -->
+        <path d="M10,74
+                 C 40,82 72,108 112,120
+                 C 175,138 225,142 260,142
+                 C 295,142 345,138 408,120
+                 C 448,108 480,82 510,74
+                 L 510,84
+                 C 480,92 448,117 408,129
+                 C 345,147 295,151 260,151
+                 C 225,151 175,147 112,129
+                 C 72,117 40,92 10,84 Z"
+              fill="#08080a"/>
+        <!-- thin ridge highlight along the top edge -->
+        <path d="M10,52 C40,60 72,86 112,98 C175,116 225,120 260,120 C295,120 345,116 408,98 C448,86 480,60 510,52"
+              fill="none" stroke="#5c6478" stroke-width="1.4" opacity="0.7"/>
+      </svg>
+      <script>
+      (function () {
+        // corrugated ribs clipped to the plank, sampled evenly across the width
+        const group = document.getElementById('roofRibs');
+        const ns = 'http://www.w3.org/2000/svg';
+        for (let x = 8; x <= 512; x += 7) {
+          const line = document.createElementNS(ns, 'line');
+          line.setAttribute('x1', x); line.setAttribute('y1', 30);
+          line.setAttribute('x2', x); line.setAttribute('y2', 155);
+          line.setAttribute('stroke', (x / 7) % 2 === 0 ? '#3a4256' : '#1a1e28');
+          line.setAttribute('stroke-width', '2.6');
+          group.appendChild(line);
+        }
+      })();
+      </script>
+      <canvas id="pagodaCurtainCanvas"></canvas>
+    </div>
     <div class="intro-logo">DE<span>CODED</span></div>
   </div>
 </div>
@@ -3245,6 +3350,175 @@ let agentAddress = null;
   }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
 
   sections.forEach(s => observer.observe(s.section));
+})();
+</script>
+
+<script>
+// ---------- PAGODA DIGIT CURTAIN (whole-curtain mouse reactivity) ----------
+(function () {
+  const wrap = document.getElementById('pagodaCurtain');
+  const roof = document.getElementById('pagodaRoof');
+  const canvas = document.getElementById('pagodaCurtainCanvas');
+  if (!wrap || !canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, strands = [], embers = [];
+  const COLS = 42;
+
+  function resize() {
+    // pull the canvas up so its top edge sits just under the roof's actual
+    // bottom edge (the dark underside lip, viewBox y=84 at the tips, box
+    // bottom at y=172, box width 520) -- previously this was measured off
+    // the top ridge line by mistake, which pulled the curtain up over the
+    // roof itself
+    const roofRect = wrap.getBoundingClientRect();
+    const clearance = 6; // small gap so digits sit under, not touching, the roof
+    canvas.style.marginTop = -(roofRect.width * (88 / 520) - clearance) + 'px';
+
+    const rect = canvas.getBoundingClientRect();
+    W = canvas.width = rect.width;
+    H = canvas.height = rect.height;
+    buildStrands();
+    buildEmbers();
+  }
+
+  function buildStrands() {
+    strands = [];
+    const spanX = W * 0.94;
+    const originX = (W - spanX) / 2;
+    // the roof plank dips down in the middle and sweeps up at both horns
+    // (viewBox: y=52 at the tips, y=120 at the deepest point of the dip,
+    // over a viewBox width of 520) -- mirror that curve here so each column
+    // starts right where the roofline actually is above it, not on one flat line
+    const roofDip = Math.min(H * 0.3, W * (68 / 520));
+    for (let i = 0; i < COLS; i++) {
+      const t = i / (COLS - 1);
+      const baseX = originX + t * spanX;
+      const hang = roofDip * Math.sin(Math.PI * t); // 0 at both edges, max at center
+      // ragged left edge, dense even right edge (matches reference silhouette)
+      const edge = t < 0.5 ? (0.5 - t) / 0.5 : 0;
+      const wave = Math.sin(t * 13.1) * Math.cos(t * 5.3);
+      const lenBase = H - 6 - hang;
+      let length = lenBase * (0.5 + 0.5 * (1 - edge * (0.45 + 0.4 * Math.abs(wave))));
+      length = Math.max(40, Math.min(lenBase, length));
+      const dotCount = Math.floor(length / 12);
+      const chars = [];
+      for (let d = 0; d < dotCount; d++) {
+        chars.push(Math.random() < 0.5 ? '0' : '1');
+      }
+      strands.push({
+        baseX, chars, phase: Math.random() * 6.28,
+        driftAmp: 4 + edge * 14,
+        hang,
+        pulseAt: -10, pulseUntil: -10
+      });
+    }
+  }
+
+  function buildEmbers() {
+    embers = [];
+    for (let i = 0; i < 10; i++) {
+      embers.push({
+        x: W * (0.2 + Math.random() * 0.6),
+        y: Math.random() * H,
+        speed: 6 + Math.random() * 10,
+        drift: (Math.random() - 0.5) * 8,
+        size: 1 + Math.random() * 1.6,
+        phase: Math.random() * 6.28
+      });
+    }
+  }
+
+  // normalized mouse position relative to whole container, defaults to rest
+  let mx = 0.5, my = 0.25, active = false;
+  function setMouseFromEvent(clientX, clientY) {
+    const rect = wrap.getBoundingClientRect();
+    mx = (clientX - rect.left) / rect.width;
+    my = (clientY - rect.top) / rect.height;
+    active = true;
+    if (roof) {
+      const rx = (my - 0.25) * -6;   // tilt up/down, small
+      const ry = (mx - 0.5) * 10;    // tilt left/right, small
+      roof.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+    }
+  }
+  window.addEventListener('mousemove', (e) => setMouseFromEvent(e.clientX, e.clientY));
+  window.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if (t) setMouseFromEvent(t.clientX, t.clientY);
+  }, { passive: true });
+  wrap.addEventListener('mouseleave', () => {
+    active = false;
+    if (roof) roof.style.transform = 'perspective(900px) rotateX(0deg) rotateY(0deg)';
+  });
+
+  const t0 = performance.now();
+  let nextPulse = 0;
+
+  function draw(now) {
+    const dt = (now - t0) / 1000;
+    ctx.clearRect(0, 0, W, H);
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.textAlign = 'center';
+
+    // occasionally light up a random column top-to-bottom, like a data pulse
+    if (dt > nextPulse) {
+      const s = strands[Math.floor(Math.random() * strands.length)];
+      s.pulseAt = dt;
+      s.pulseUntil = dt + 0.9;
+      nextPulse = dt + 0.6 + Math.random() * 1.4;
+    }
+
+    // global sway target: whole curtain leans toward mouse x, whole curtain
+    // compresses/stretches slightly with mouse y -- every column responds,
+    // not just ones near the cursor
+    const targetLean = active ? (mx - 0.5) * 2 : 0;   // -1..1
+    const targetSpread = active ? (my - 0.25) : 0;
+
+    for (const s of strands) {
+      const n = s.chars.length;
+      const pulsing = dt < s.pulseUntil;
+      const pulseT = pulsing ? 1 - (dt - s.pulseAt) / (s.pulseUntil - s.pulseAt) : 0;
+      for (let d = 0; d < n; d++) {
+        const depth = d / n; // 0 top .. 1 bottom
+        const idle = Math.sin(dt * 0.5 + s.phase + d * 0.14) * s.driftAmp * depth;
+        const lean = targetLean * 22 * depth;
+        const spread = targetSpread * 10 * depth;
+        const x = s.baseX + idle + lean;
+        const y = 4 + s.hang + d * 12 + spread * depth;
+        let alpha = 0.18 + 0.55 * (1 - depth) + Math.min(0.25, Math.abs(targetLean) * 0.3);
+        const fade = 1 - Math.min(1, Math.max(0, (y - H * 0.75) / (H * 0.25)));
+        alpha *= fade;
+        let colored = d % 7 === 0;
+        if (pulsing && Math.abs(depth - (1 - pulseT)) < 0.12) {
+          alpha = 1;
+          colored = true;
+        }
+        ctx.fillStyle = colored
+          ? `rgba(200,255,20,${Math.min(1, alpha + 0.2)})`
+          : `rgba(212,175,55,${Math.min(1, alpha)})`;
+        ctx.fillText(s.chars[d], x, y);
+      }
+    }
+
+    // ambient embers drifting up toward the roofline
+    for (const e of embers) {
+      e.y -= e.speed * (1 / 60);
+      const sway = Math.sin(dt * 0.8 + e.phase) * e.drift;
+      if (e.y < -4) { e.y = H; e.x = W * (0.2 + Math.random() * 0.6); }
+      const fadeTop = Math.min(1, e.y / (H * 0.15));
+      const fadeBottom = Math.min(1, (H - e.y) / (H * 0.2));
+      const a = 0.5 * Math.min(fadeTop, fadeBottom);
+      ctx.fillStyle = `rgba(200,255,20,${a.toFixed(2)})`;
+      ctx.beginPath();
+      ctx.arc(e.x + sway, e.y, e.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  setTimeout(() => { resize(); requestAnimationFrame(draw); }, 50);
 })();
 </script>
 
