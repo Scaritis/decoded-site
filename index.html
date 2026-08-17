@@ -1154,6 +1154,63 @@
   /* ---------- ACTIVE NAV LINK ---------- */
   .nav-links a.active { color: var(--lime); }
 
+  /* ---------- MINT COUNTDOWN (first thing after intro) ---------- */
+  #mintCountdown {
+    padding: 140px 20px 70px;
+    text-align: center;
+    background: var(--bg);
+    border-bottom: 1px solid var(--panel-border);
+  }
+  #mintCountdown .countdown-label {
+    font-family: var(--mono);
+    letter-spacing: 4px;
+    font-size: 13px;
+    color: #ffe066;
+    opacity: 0.75;
+    margin-bottom: 18px;
+  }
+  #mintCountdown .countdown-timer {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  #mintCountdown .cd-unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 70px;
+  }
+  #mintCountdown .cd-unit span {
+    font-family: var(--display);
+    font-size: clamp(36px, 7vw, 68px);
+    font-weight: 400;
+    color: #ffe066;
+    text-shadow: 0 0 22px rgba(255, 224, 102, 0.55), 0 0 46px rgba(255, 224, 102, 0.25);
+    line-height: 1;
+  }
+  #mintCountdown .cd-unit label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #ffe066;
+    opacity: 0.6;
+    margin-top: 6px;
+  }
+  #mintCountdown .cd-sep {
+    font-family: var(--display);
+    font-size: clamp(28px, 5vw, 52px);
+    color: #ffe066;
+    opacity: 0.4;
+    transform: translateY(-8px);
+  }
+  @media (max-width: 600px) {
+    #mintCountdown { padding: 120px 16px 50px; }
+    #mintCountdown .countdown-timer { gap: 6px; }
+    #mintCountdown .cd-unit { min-width: 56px; }
+  }
+
   /* ---------- PAGODA DIGIT CURTAIN ---------- */
   #pagodaCurtain {
     position: relative;
@@ -1286,6 +1343,19 @@
   </div>
   <button class="connect-btn" onclick="alert('Wallet connect flow goes here — hook up wagmi/ethers on the real deploy.')">CONNECT</button>
 </nav>
+
+<section id="mintCountdown">
+  <div class="countdown-label">MINT COUNTDOWN</div>
+  <div class="countdown-timer">
+    <div class="cd-unit"><span id="cdDays">00</span><label>DAYS</label></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span id="cdHours">00</span><label>HRS</label></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span id="cdMins">00</span><label>MIN</label></div>
+    <div class="cd-sep">:</div>
+    <div class="cd-unit"><span id="cdSecs">00</span><label>SEC</label></div>
+  </div>
+</section>
 
 <section class="hero">
   <canvas id="matrix-canvas"></canvas>
@@ -3519,6 +3589,52 @@ let agentAddress = null;
 
   window.addEventListener('resize', resize);
   setTimeout(() => { resize(); requestAnimationFrame(draw); }, 50);
+})();
+</script>
+
+<script>
+// ---------- LIVE MINT COUNTDOWN ----------
+// Target matches the "MINT: AUG 19" date used elsewhere on the site.
+// No time-of-day is specified anywhere else, so this assumes 00:00 local
+// time on mint day -- change MINT_TARGET if the exact hour is known.
+(function () {
+  // Mint: Aug 19, 2026, 9:00 PM Pakistan Time (UTC+5) -- stored with explicit
+  // offset so it counts down to the same instant for every visitor, regardless
+  // of their own timezone.
+  const MINT_TARGET = new Date('2026-08-19T21:00:00+05:00');
+  const elD = document.getElementById('cdDays');
+  const elH = document.getElementById('cdHours');
+  const elM = document.getElementById('cdMins');
+  const elS = document.getElementById('cdSecs');
+  if (!elD) return;
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick() {
+    const now = new Date();
+    let diff = Math.max(0, MINT_TARGET - now);
+
+    const days = Math.floor(diff / 86400000);
+    diff -= days * 86400000;
+    const hours = Math.floor(diff / 3600000);
+    diff -= hours * 3600000;
+    const mins = Math.floor(diff / 60000);
+    diff -= mins * 60000;
+    const secs = Math.floor(diff / 1000);
+
+    elD.textContent = pad(days);
+    elH.textContent = pad(hours);
+    elM.textContent = pad(mins);
+    elS.textContent = pad(secs);
+
+    if (MINT_TARGET - now <= 0) {
+      const label = document.querySelector('#mintCountdown .countdown-label');
+      if (label) label.textContent = 'MINTING LIVE';
+    }
+  }
+
+  tick();
+  setInterval(tick, 1000);
 })();
 </script>
 
